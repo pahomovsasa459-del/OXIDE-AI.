@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <application android:allowBackup="false" android:label="OXIDE AI"
+    <application android:allowBackup="false" android:label="@string/app_name"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
@@ -10,5 +10,16 @@
             </intent-filter>
         </activity>
         <service android:name=".FloatingMenuService" android:exported="false" />
+        <service
+            android:name=".GameControlAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/oxide_accessibility_service" />
+        </service>
     </application>
 </manifest>
