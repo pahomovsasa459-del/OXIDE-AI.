@@ -33,25 +33,28 @@ class MainActivity : Activity() {
             setBackgroundColor(0xFF10151B.toInt())
         }
         root.addView(TextView(this).apply {
-            text = "OXIDE AI 0.2"
+            text = "OXIDE AI 0.3"
             textSize = 30f
             gravity = Gravity.CENTER
             setTextColor(0xFF71F0A2.toInt())
         })
         status = TextView(this).apply {
-            text = "Голосовой помощник и плавающее меню"
+            text = "Голосовой помощник и управление жестами"
             textSize = 16f
             setTextColor(0xFFFFFFFF.toInt())
             setPadding(0, 24, 0, 18)
         }
         output = TextView(this).apply {
-            text = "Сначала разреши показ поверх других приложений."
+            text = "Разреши показ поверх других приложений и включи службу управления."
             textSize = 15f
             setTextColor(0xFFB8C5D1.toInt())
             setPadding(0, 18, 0, 0)
         }
         root.addView(status)
         root.addView(button("Разрешить плавающее меню") { requestOverlayPermission() })
+        root.addView(button("Включить управление жестами") {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        })
         root.addView(button("Показать меню поверх игры") { showFloatingMenu() })
         root.addView(button("🎙 Сказать команду") { listen() })
         root.addView(button("Остановить распознавание") {
@@ -88,7 +91,7 @@ class MainActivity : Activity() {
             return
         }
         startService(Intent(this, FloatingMenuService::class.java))
-        status.text = "Плавающее меню запущено. Открой игру, чтобы проверить его."
+        status.text = "Плавающее меню запущено. Открой игру и проверь тестовый свайп."
     }
 
     private fun listen() {
@@ -117,8 +120,8 @@ class MainActivity : Activity() {
                 val command = phrase.lowercase(Locale("ru", "RU"))
                 status.text = when {
                     "стоп" in command -> "Команда остановки принята."
-                    "дерев" in command -> "Понял: задача «добыть дерево». Автосбор пока не подключён."
-                    "кам" in command -> "Понял: задача «добыть камень». Автосбор пока не подключён."
+                    "дерев" in command -> "Распознана задача «добыть дерево». Автосбор ещё разрабатывается."
+                    "кам" in command -> "Распознана задача «добыть камень». Автосбор ещё разрабатывается."
                     else -> "Голос распознан. Это тестовый режим."
                 }
             }
