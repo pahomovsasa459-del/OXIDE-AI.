@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">OXIDE AI</string>
+    <string name="accessibility_service_description">Позволяет OXIDE AI выполнять жесты на экране только после ручного включения службы пользователем.</string>
+</resources>
