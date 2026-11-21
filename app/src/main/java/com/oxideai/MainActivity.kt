@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -31,29 +33,29 @@ class MainActivity : Activity() {
             setBackgroundColor(0xFF10151B.toInt())
         }
         root.addView(TextView(this).apply {
-            text = "OXIDE AI"
+            text = "OXIDE AI 0.2"
             textSize = 30f
             gravity = Gravity.CENTER
             setTextColor(0xFF71F0A2.toInt())
         })
         status = TextView(this).apply {
-            text = "Готов. Версия 0.1 — проверка голосовых команд."
+            text = "Голосовой помощник и плавающее меню"
             textSize = 16f
             setTextColor(0xFFFFFFFF.toInt())
             setPadding(0, 24, 0, 18)
         }
         output = TextView(this).apply {
-            text = "Здесь появится распознанная команда."
+            text = "Сначала разреши показ поверх других приложений."
             textSize = 15f
             setTextColor(0xFFB8C5D1.toInt())
             setPadding(0, 18, 0, 0)
         }
         root.addView(status)
+        root.addView(button("Разрешить плавающее меню") { requestOverlayPermission() })
+        root.addView(button("Показать меню поверх игры") { showFloatingMenu() })
         root.addView(button("🎙 Сказать команду") { listen() })
-        root.addView(button("СТОП") {
+        root.addView(button("Остановить распознавание") {
             recognizer?.cancel()
-            recognizer?.destroy()
-            recognizer = null
             status.text = "Прослушивание остановлено."
         })
         root.addView(output)
@@ -68,6 +70,25 @@ class MainActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { bottomMargin = 10 }
+    }
+
+    private fun requestOverlayPermission() {
+        if (Settings.canDrawOverlays(this)) {
+            status.text = "Разрешение уже выдано."
+            return
+        }
+        startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$packageName")))
+    }
+
+    private fun showFloatingMenu() {
+        if (!Settings.canDrawOverlays(this)) {
+            status.text = "Сначала выдай разрешение на показ поверх других приложений."
+            requestOverlayPermission()
+            return
+        }
+        startService(Intent(this, FloatingMenuService::class.java))
+        status.text = "Плавающее меню запущено. Открой игру, чтобы проверить его."
     }
 
     private fun listen() {
@@ -96,9 +117,9 @@ class MainActivity : Activity() {
                 val command = phrase.lowercase(Locale("ru", "RU"))
                 status.text = when {
                     "стоп" in command -> "Команда остановки принята."
-                    "дерев" in command || "кам" in command || "ресурс" in command ->
-                        "Команда принята. Игровой автопилот пока не подключён."
-                    else -> "Голос распознан. Пока это тестовый режим."
+                    "дерев" in command -> "Понял: задача «добыть дерево». Автосбор пока не подключён."
+                    "кам" in command -> "Понял: задача «добыть камень». Автосбор пока не подключён."
+                    else -> "Голос распознан. Это тестовый режим."
                 }
             }
             override fun onPartialResults(partialResults: Bundle?) {}
@@ -108,7 +129,7 @@ class MainActivity : Activity() {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "ru-RU")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Скажи команду для OXIDE AI")
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Скажи задачу для OXIDE AI")
         }
         recognizer?.startListening(intent)
     }
